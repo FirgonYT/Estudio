@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foro de Propuestas Educativas</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Estilos mínimos para modal de autenticación y botón en navbar -->
+    <style>
+        /* modal básico */
+        .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.5); }
+        .modal-content { background:#fff; margin:5% auto; padding:20px; border-radius:8px; width:90%; max-width:520px; }
+        .modal-close { float:right; background:#e0e0e0; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; }
+        .modal-tabs { display:flex; gap:8px; margin-bottom:12px; }
+        .btn-auth { padding:8px 12px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; border-radius:6px; cursor:pointer; }
+        .nav-actions { display:flex; gap:8px; align-items:center; }
+        .nav-actions .btn-link { background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer; }
+
+        /* HUD / avatar */
+        .user-avatar {
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            background:linear-gradient(135deg,#7b61ff,#3dd5c0);
+            color:white;
+            font-weight:700;
+            margin-right:8px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* Perfil modal */
+        #profileModal .modal-content { max-width:420px; }
+        .profile-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+        .profile-row input, .profile-row select { flex:1; padding:8px; border-radius:6px; border:1px solid #e0e0e0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1>🎓 Foro de Propuestas Educativas</h1>
+            <div class="stats">
+                <span id="totalProposals">Total: 0</span>
+            </div>
+
+            <div class="nav-actions">
+                <!-- Nueva barra de búsqueda de usuarios -->
+                <form id="searchUserForm" style="display:flex;gap:8px;align-items:center;">
+                    <input type="email" id="searchUserEmail" placeholder="Buscar usuario por email" style="padding:6px 10px;border-radius:6px;border:1px solid #e0e0e0;" required>
+                    <button type="submit" class="btn-link" style="background:var(--accent-1);color:#fff;">Buscar</button>
+                </form>
+                <button id="openAuth" class="btn-auth">Iniciar / Registrar</button>
+                <div id="navUser" style="display:none; align-items:center; gap:8px;">
+                    <div id="navAvatar" class="user-avatar" title="Perfil"></div>
+                    <span id="navUserName" style="color:#fff; margin-left:4px;"></span>
+                    <!-- Cambiado: ahora es un enlace a la página de perfil externa -->
+                    <a id="openProfileBtn" class="btn-link" href="profile.html" style="color:#fff; text-decoration:none;">Perfil</a>
+                    <button id="navSignOutBtn" class="btn-submit" style="background:#e53935; margin-left:8px;">Cerrar sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Propuesta: dejamos la sección del formulario pero protegida por auth -->
+        <section class="form-section">
+            <h2>Nueva Propuesta</h2>
+            <form id="proposalForm">
+                <!-- ...existing code for fields (title, category, description) ... -->
+                <div class="form-group">
+                    <label for="title">Título de la propuesta:</label>
+                    <input type="text" id="title" placeholder="Título breve y descriptivo" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Categoría:</label>
+                    <select id="category" required>
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Currículo">Currículo</option>
+                        <option value="Tecnología">Tecnología</option>
+                        <option value="Infraestructura">Infraestructura</option>
+                        <option value="Recursos">Recursos</option>
+                        <option value="Inclusión">Inclusión</option>
+                        <option value="Evaluación">Evaluación</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción:</label>
+                    <textarea id="description" rows="5" placeholder="Describe tu propuesta detalladamente" required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Publicar Propuesta</button>
+                <p style="font-size:13px;color:#777;margin-top:8px;">Debes iniciar sesión para publicar. Si no tienes cuenta, regístrate desde "Iniciar / Registrar".</p>
+            </form>
+        </section>
+
+        <!-- Proposals section (existing) -->
+        <section class="proposals-section">
+            <!-- ...existing code for filters and proposalsList ... -->
+            <div class="filters">
+                <h2>Propuestas</h2>
+                <div class="filter-controls">
+                    <input type="text" id="searchInput" placeholder="Buscar propuestas...">
+                    <select id="filterRole">
+                        <option value="">Todos los roles</option>
+                        <option value="Estudiante">Estudiante</option>
+                        <option value="Profesor">Profesor</option>
+                        <option value="Rector">Rector</option>
+                        <option value="Directivo">Directivo</option>
+                        <option value="Personal Administrativo">Personal Administrativo</option>
+                    </select>
+                    <select id="filterCategory">
+                        <option value="">Todas las categorías</option>
+                        <option value="Currículo">Currículo</option>
+                        <option value="Tecnología">Tecnología</option>
+                        <option value="Infraestructura">Infraestructura</option>
+                        <option value="Recursos">Recursos</option>
+                        <option value="Inclusión">Inclusión</option>
+                        <option value="Evaluación">Evaluación</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="proposalsList" class="proposals-list">
+                <p class="empty-state">No hay propuestas aún. ¡Sé el primero en compartir una!</p>
+            </div>
+        </section>
+
+        <!-- Chat público / Mensajes -->
+        <section class="form-section" id="chatSection">
+            <h2>Chat público</h2>
+            <div id="messagesList" style="max-height:200px;overflow:auto;background:#fafafa;padding:10px;border-radius:6px;margin-bottom:10px;">
+                <p class="empty-state">No hay mensajes aún.</p>
+            </div>
+            <form id="messageForm">
+                <input type="text" id="messageText" placeholder="Escribe un mensaje público..." required>
+                <button type="submit" class="btn-submit">Enviar</button>
+            </form>
+        </section>
+
+        <!-- Stats section (existing) -->
+        <section class="stats-section">
+            <!-- ...existing code... -->
+            <h2>Estadísticas</h2>
+            <div class="stats-grid">
+                <div id="roleStats" class="stats-box">
+                    <h3>Por Rol</h3>
+                    <div id="roleChart"></div>
+                </div>
+                <div id="institutionStats" class="stats-box">
+                    <h3>Por Institución</h3>
+                    <div id="institutionChart"></div>
+                </div>
+                <div id="categoryStats" class="stats-box">
+                    <h3>Por Categoría</h3>
+                    <div id="categoryChart"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de autenticación (separado del contenido principal) -->
+    <div id="authModal" class="modal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true">
+            <button id="closeAuthBtn" class="modal-close">Cerrar</button>
+
+            <div class="modal-tabs">
+                <button id="showSigninTab" class="btn-auth">Entrar</button>
+                <button id="showSignupTab" class="btn-auth">Registrarse</button>
+            </div>
+
+            <!-- Formulario de login -->
+            <div id="signinTab">
+                <form id="signinForm">
+                    <h3>Iniciar sesión</h3>
+                    <input type="email" id="signinEmail" placeholder="Email" required>
+                    <input type="password" id="signinPassword" placeholder="Contraseña" required>
+                    <button id="btnSignin" class="btn-submit">Entrar</button>
+                </form>
+            </div>
+
+            <!-- Formulario de registro -->
+            <div id="signupTab" style="display:none;">
+                <form id="signupForm">
+                    <h3>Crear cuenta</h3>
+                    <input type="text" id="signupName" placeholder="Nombre completo" required>
+                    <input type="email" id="signupEmail" placeholder="Email" required>
+                    <input type="password" id="signupPassword" placeholder="Contraseña" required>
+                    <select id="signupRole" required>
+                        <option value="">Selecciona tu rol</option>
+                        <option value="Estudiante">Estudiante</option>
+                        <option value="Profesor">Profesor</option>
+                        <option value="Rector">Rector</option>
+                        <option value="Directivo">Directivo</option>
+                        <option value="Personal Administrativo">Personal Administrativo</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                    <input type="text" id="signupInstitution" placeholder="Institución" required>
+                    <button type="submit" class="btn-submit">Registrarse</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messenger-style chat flotante -->
+    <div id="messengerChat" style="display:none;position:fixed;bottom:24px;right:24px;width:340px;max-width:95vw;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e0e0e0;">
+        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
+            <span id="messengerChatTitle" style="font-weight:600;"></span>
+            <button id="closeMessengerChat" style="background:none;border:none;font-size:18px;cursor:pointer;">×</button>
+        </div>
+        <div id="messengerMessagesList" style="height:260px;overflow-y:auto;padding:12px;background:#fafafa;"></div>
+        <form id="messengerMessageForm" style="display:flex;gap:8px;padding:12px;border-top:1px solid #eee;">
+            <input type="text" id="messengerMessageText" placeholder="Escribe un mensaje..." style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e0;" required>
+            <button type="submit" class="btn-submit" style="padding:8px 14px;">Enviar</button>
+        </form>
+    </div>
+
+    <!-- Agregar Firebase (compat) y cargar app.js después de inicializar -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script>
+        // filepath: c:\Users\IK\Documents\Proyecto\index.html
+        // Inicializar Firebase (compat)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBv7YqZlGtIrLJ8-mI4TIbDl462BktBks",
+            authDomain: "proyecto-b33a8.firebaseapp.com",
+            projectId: "proyecto-b33a8",
+            // CORRECCIÓN: storageBucket normalmente termina en .appspot.com
+            storageBucket: "proyecto-b33a8.appspot.com",
+            messagingSenderId: "17212707039",
+            appId: "1:17212707039:web:117be276c471dc8421996a"
+        };
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            window.auth = firebase.auth();
+            window.db = firebase.firestore();
+            console.log('Firebase inicializado:', firebase.apps.length ? firebase.apps[0].name : '(no apps)');
+        } catch (err) {
+            console.error('Error inicializando Firebase. Revisa firebaseConfig en index.html:', err);
+            // Mostrar aviso mínimo al usuario si falla la inicialización
+            document.addEventListener('DOMContentLoaded', () => {
+                alert('Error de configuración de Firebase. Revisa la consola para más detalles.');
+            });
+        }
+    </script>
+
+    <script src="app.js"></script>
+</body>
+</html>

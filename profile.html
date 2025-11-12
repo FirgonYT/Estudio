@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Mi perfil — Foro propuestas</title>
+	<link rel="stylesheet" href="styles.css">
+	<style>
+		.container-small{ max-width:720px; margin:30px auto; padding:20px; }
+		.topbar{ display:flex; gap:12px; align-items:center; margin-bottom:18px; }
+		.back-link{ color:#667eea; text-decoration:none; font-weight:600; }
+	</style>
+</head>
+<body>
+	<div class="container container-small">
+		<div class="topbar">
+			<a class="back-link" href="index.html">← Volver al foro</a>
+			<h2 style="margin-left:6px;">Mi perfil</h2>
+		</div>
+
+		<div class="form-section" style="padding:16px;">
+			<form id="profileFormPage">
+				<div class="form-group">
+					<label>Nombre</label>
+					<input id="profileNamePage" type="text" required>
+				</div>
+				<div class="form-group">
+					<label>Rol</label>
+					<select id="profileRolePage" required>
+						<option value="">Selecciona tu rol</option>
+						<option value="Estudiante">Estudiante</option>
+						<option value="Profesor">Profesor</option>
+						<option value="Rector">Rector</option>
+						<option value="Directivo">Directivo</option>
+						<option value="Personal Administrativo">Personal Administrativo</option>
+						<option value="Otro">Otro</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>Institución</label>
+					<input id="profileInstitutionPage" type="text" required>
+				</div>
+
+				<div style="display:flex; gap:8px; margin-top:12px;">
+					<button type="submit" class="btn-submit">Guardar perfil</button>
+					<button id="btnSignOutProfile" type="button" class="btn-submit" style="background:#e53935;">Cerrar sesión</button>
+				</div>
+			</form>
+			<p id="profileMessage" style="color:#666;margin-top:12px;"></p>
+		</div>
+
+		<!-- Nueva sección: publicaciones del usuario -->
+		<div class="form-section" style="margin-top:24px; padding:16px;">
+			<h3>Mis publicaciones</h3>
+			<div id="myProposals">
+				<p class="empty-state">Cargando publicaciones...</p>
+			</div>
+		</div>
+
+		<!-- Nueva sección: ver perfil de otro usuario y chat privado -->
+		<div class="form-section" style="margin-top:24px; padding:16px;">
+			<h3>Buscar perfil de otro usuario</h3>
+			<form id="searchUserForm" style="display:flex; gap:8px; margin-bottom:12px;">
+				<input type="email" id="searchUserEmail" placeholder="Email del usuario" required style="flex:1;">
+				<button type="submit" class="btn-submit">Buscar</button>
+			</form>
+			<div id="otherProfile"></div>
+			<div id="privateChatSection" style="margin-top:18px; display:none;">
+				<h4>Chat privado con <span id="chatWithName"></span></h4>
+				<div id="privateMessagesList" style="max-height:180px;overflow:auto;background:#fafafa;padding:10px;border-radius:6px;margin-bottom:10px;"></div>
+				<form id="privateMessageForm" style="display:flex;gap:8px;">
+					<input type="text" id="privateMessageText" placeholder="Escribe un mensaje privado..." required>
+					<button type="submit" class="btn-submit">Enviar</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Firebase scripts y config (misma config que index.html) -->
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+	<script>
+		const firebaseConfig = {
+			apiKey: "AIzaSyDBv7YqZlGtIrLJ8-mI4TIbDl462BktBks",
+			authDomain: "proyecto-b33a8.firebaseapp.com",
+			projectId: "proyecto-b33a8",
+			storageBucket: "proyecto-b33a8.appspot.com",
+			messagingSenderId: "17212707039",
+			appId: "1:17212707039:web:117be276c471dc8421996a"
+		};
+		try {
+			firebase.initializeApp(firebaseConfig);
+			window.auth = firebase.auth();
+			window.db = firebase.firestore();
+		} catch (e) {
+			console.error('Firebase init error', e);
+			alert('Error inicializando Firebase. Revisa la consola.');
+		}
+	</script>
+
+	<script src="profile.js"></script>
+</body>
+</html>
